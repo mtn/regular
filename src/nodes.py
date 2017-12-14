@@ -54,7 +54,7 @@ class CharacterNode(RegexNode):
     def derive(self, char):
         if char == self.char:
             return self.next
-        return NeverMatches
+        return NeverMatches()
 
     def __repr__(self):
         return "CharNode({})".format(self.char)
@@ -64,14 +64,16 @@ class AlternationNode(RegexNode):
     def __init__(self, alternatives):
         self.alternatives = alternatives
 
+    def derive(self, char):
+        return AlternationNode(list(map(lambda c: c.derive(char), self.alternatives)))
+
     def __repr__(self):
         return "Alternode({})".format(self.alternatives)
 
-commonTail = CharacterNode('d',EmptyString)
-print("commontail {}".format(commonTail))
+commonTail = CharacterNode('d',EmptyString())
 alternation = AlternationNode([CharacterNode('b',commonTail),CharacterNode('c',commonTail)])
-print(alternation)
-alternation = AlternationNode([NeverMatches(), commonTail])
-print(alternation)
-alternation = AlternationNode([NeverMatches()])
-print(alternation)
+head = CharacterNode('a', alternation)
+
+print(head.derive('a').derive('b'))
+print(head.derive('a').derive('e'))
+print(head.derive('a').derive('b').derive('d'))
