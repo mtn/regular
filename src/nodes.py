@@ -12,24 +12,27 @@ class RegexNode:
         if not args:
             return super(RegexNode, cls).__new__(cls)
 
-        # Alternation Node
         elif len(args) == 1:
-            _alternatives = list(filter(lambda x: not isinstance(x, NeverMatches), args[0]))
 
-            if not _alternatives:
-                return NeverMatches()
-            elif len(_alternatives) == 1:
-                return _alternatives[0]
+            # List of alternatives -> AlternationNode
+            if isinstance(args[0], list):
+                _alternatives = list(filter(lambda x: not isinstance(x, NeverMatches), args[0]))
 
-            alternode = super(RegexNode, cls).__new__(AlternationNode)
-            alternode.__init__(_alternatives)
-            return alternode
+                if not _alternatives:
+                    return NeverMatches()
+                elif len(_alternatives) == 1:
+                    return _alternatives[0]
 
+                alternode = super(RegexNode, cls).__new__(AlternationNode)
+                alternode.__init__(_alternatives)
+                return alternode
 
+            else:
+                return super(RegexNode, cls).__new__(cls)
+
+        # Character and next -> CharacterNode
         elif len(args) == 2:
-            charnode = super(RegexNode, cls).__new__(CharacterNode)
-            charnode.__init__(args[0], args[1])
-            return charnode
+            return super(RegexNode, cls).__new__(CharacterNode)
 
     def derive(self, _):
         return NeverMatches()
@@ -70,10 +73,29 @@ class AlternationNode(RegexNode):
     def __repr__(self):
         return "Alternode({})".format(self.alternatives)
 
-commonTail = CharacterNode('d',EmptyString())
-alternation = AlternationNode([CharacterNode('b',commonTail),CharacterNode('c',commonTail)])
-head = CharacterNode('a', alternation)
+class AnyCharacterNode(RegexNode):
 
-print(head.derive('a').derive('b'))
-print(head.derive('a').derive('e'))
-print(head.derive('a').derive('b').derive('d'))
+    def __init__(self, next_node):
+        self.next = next_node
+
+    def __repr__(self):
+        return "AnyNode"
+
+
+class RepititionNode(RegexNode):
+
+    def __init__(self, next_node):
+        self.head = NeverMatches()
+        self.next = next_node
+
+    def __repr__(self):
+        return "RepNode(head: {}, next: {})".format(self.head, self.next)
+
+# commonTail = CharacterNode('d',EmptyString())
+# print("done with comon")
+# alternation = AlternationNode([CharacterNode('b',commonTail),CharacterNode('c',commonTail)])
+# head = CharacterNode('a', alternation)
+
+# print(head.derive('a').derive('b'))
+# print(head.derive('a').derive('e'))
+# print(head.derive('a').derive('b').derive('d'))
