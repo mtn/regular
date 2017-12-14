@@ -78,24 +78,24 @@ class AnyCharacterNode(RegexNode):
     def __init__(self, next_node):
         self.next = next_node
 
+    def derive(self, _):
+        return self.next
+
     def __repr__(self):
         return "AnyNode"
 
 
-class RepititionNode(RegexNode):
+class RepetitionNode(RegexNode):
 
     def __init__(self, next_node):
         self.head = NeverMatches()
         self.next = next_node
 
+    def derive(self, char):
+        return AlternationNode([
+            self.head.derive(char),
+            self.next.derive(char)
+            ])
+
     def __repr__(self):
         return "RepNode(head: {}, next: {})".format(self.head, self.next)
-
-# commonTail = CharacterNode('d',EmptyString())
-# print("done with comon")
-# alternation = AlternationNode([CharacterNode('b',commonTail),CharacterNode('c',commonTail)])
-# head = CharacterNode('a', alternation)
-
-# print(head.derive('a').derive('b'))
-# print(head.derive('a').derive('e'))
-# print(head.derive('a').derive('b').derive('d'))
