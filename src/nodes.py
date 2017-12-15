@@ -37,6 +37,12 @@ class RegexNode:
     def derive(self, _):
         return NeverMatches()
 
+    def matchEnd(self):
+        return False
+
+    def canMatchMore(self):
+        return not self.matchEnd()
+
     def __repr__(self):
         return "RegexNode"
 
@@ -45,6 +51,9 @@ class NeverMatches(RegexNode):
         return "NeverMatches"
 
 class EmptyString(RegexNode):
+    def matchEnd(self):
+        return True
+
     def __repr__(self):
         return "EmptyString"
 
@@ -69,6 +78,16 @@ class AlternationNode(RegexNode):
 
     def derive(self, char):
         return AlternationNode(list(map(lambda c: c.derive(char), self.alternatives)))
+
+    def matchEnd(self):
+        if [altern for altern in self.alternatives if altern.matchEnd()]:
+            return True
+        return False
+
+    def canMatchMore(self):
+        if [altern for altern in self.alternatives if altern.canMatchMore()]:
+            return True
+        return False
 
     def __repr__(self):
         return "Alternode({})".format(self.alternatives)
@@ -96,6 +115,12 @@ class RepetitionNode(RegexNode):
             self.head.derive(char),
             self.next.derive(char)
             ])
+
+    def matchEnd(self):
+        return self.next.matchEnd()
+
+    def canMatchMore(self):
+        return True
 
     def __repr__(self):
         return "RepNode(head: {}, next: {})".format(self.head, self.next)
