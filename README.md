@@ -24,6 +24,10 @@ Batch mode:
 
     python3 regular.py filename
 
+In both modes, the input format is
+
+    regex : test
+
 ## LICENSE
 
 MIT, see [LICENSE](https://github.com/mtn/regular/blob/master/LICENSE)

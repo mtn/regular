@@ -8,7 +8,7 @@ ZeroOrMore(re): repetition
 Any: wildcard
 """
 
-from nodes import *
+from src.nodes import *
 
 
 class Or:

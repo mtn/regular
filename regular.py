@@ -1,7 +1,7 @@
 import readline
 import sys
 
-import parser
+from src.parser import *
 
 PROMPT = ">> "
 READLINERC = "util/readline.rc"
@@ -20,6 +20,7 @@ def run_repl():
         if line == "exit":
             break
 
+        Parser(line)
 
 
 def run_batch():
