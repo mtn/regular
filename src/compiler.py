@@ -46,7 +46,7 @@ class RE:
         for i, c in enumerate(chars):
             state = state.derive(c)
 
-            if state.matchEnd() and i == len(chars) - 1:
+            if state.matchEnd():
                 return True
             elif state.matchEnd() and not state.canMatchMore():
                 return False
