@@ -20,7 +20,7 @@ def run_repl():
         if line == "exit":
             break
 
-        Parser(line)
+        Parser(line).parseOr()
 
 
 def run_batch():
