@@ -20,7 +20,7 @@ class Parser:
 
     def consume(self, letter):
         if not self.regex[self.ind] == letter:
-            raise UnexpectedToken
+            raise UnexpectedToken(letter, self.regex[self.ind])
 
         self.advance()
 
@@ -31,44 +31,44 @@ class Parser:
         nested = 0
         startind = self.ind
 
-        print(self.regex[self.ind:])
-
+        print(self.regex[startind:])
         if "|[" in self.regex[self.ind:]:
-            nextstart = self.regex[self.ind:].index("|[")
+            nextstart = self.regex[self.ind:].index("|[") + self.ind
         else:
             nextstart = -1
 
-        endind = self.regex[self.ind:].index("]|")
-        print(endind)
+        endind = self.regex[self.ind:].index("]|") + self.ind
 
-        while nextstart != -1:
-            if nextstart < endind:
+        counter = 0
+        while nextstart != -1 or nested:
+            counter += 1
+            if nextstart != -1 and nextstart < endind:
                 nested += 1
-                startind = nextstart + 2 + self.ind
+                startind = nextstart + 2
 
                 if "|[" in self.regex[startind:]:
-                    nextstart = self.regex[startind:].index("|[")
+                    nextstart = self.regex[startind:].index("|[") + startind
                 else:
                     nextstart = -1
-
-                endind = self.regex[startind:].index("]|")
             else:
                 nested -= 1
-                startind = endind + 2 + self.ind
+                startind = endind + 2
 
                 if "|[" in self.regex[startind:]:
-                    nextstart = self.regex[startind:].index("|[")
+                    nextstart = self.regex[startind:].index("|[") + startind
                 else:
                     nextstart = -1
+                print(nextstart)
 
-                endind = self.regex[startind:].index("]|")
+                endind = self.regex[startind:].index("]|") + startind
+
 
         if nested != 0:
             raise ParseError("Unmatched Or delimiters")
 
         inner = self.regex[self.ind:endind]
+        print("inner {}".format(inner))
 
-        print(inner)
-
+        self.ind = endind
         self.consume("]")
         self.consume("|")
