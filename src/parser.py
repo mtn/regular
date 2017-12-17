@@ -19,52 +19,118 @@ class Parser:
 
     def parseExpr(self):
         if self.regex[self.ind] == "|":
-            self.parseOr()
+            return self.parseOr()
+
+        return self
+
+    def _handleOrStart(self, nestedOrStarts, orstart, startind):
+        nestedOrStarts.append(orstart)
+        startind = orstart + 2
+
+        if "|[" in self.regex[startind:]:
+            orstart = self.regex[startind:].index("|[") + startind
+        else:
+            orstart = -1
+
+        return orstart, startind
+
+    def _handleOrEnd(self, beginNested, nestedOrs, startind, endind):
+        nestedOrs[beginNested] = endind
+        startind = endind + 2
+
+        if "|[" in self.regex[startind:]:
+            orstart = self.regex[startind:].index("|[") + startind
+        else:
+            orstart = -1
+
+        endind = self.regex[startind:].index("]|") + startind
+
+        return orstart, endind
+
+
+    def _handleZeroStart(self, nestedZeroStarts, orstart, startind):
+        nestedZeroStarts.append(orstart)
+        startind = orstart + 2
+
+        if "*(" in self.regex[startind:]:
+            zerostart = self.regex[startind:].index("*(") + startind
+        else:
+            zerostart = -1
+
+        return zerostart, startind
+
+    def _handleZeroEnd(self, beginNested, zeros, startind, endind):
+        zeros[beginNested] = endind
+        startind = endind + 1
+
+        if "*(" in self.regex[startind:]:
+            zerostart = self.regex[startind:].index("*(") + startind
+        else:
+            zerostart = -1
+
+        endind = self.regex[startind:].index(")") + startind
+
+        return zerostart, endind
 
     def parseOr(self):
+        """
+        Parse alternations
+        """
+
         self.consume("|")
         self.consume("[")
 
-        nestedStarts = []
+        nestedOrStarts = []
+        nestedZeroStarts = []
         nestedOrs = {}
+        innerZeroOrMores = {}
         startind = self.ind
 
         if "|[" in self.regex[self.ind:]:
-            nextstart = self.regex[self.ind:].index("|[") + self.ind
+            orstart = self.regex[self.ind:].index("|[") + self.ind
         else:
-            nextstart = -1
+            orstart = -1
+
+        if "*(" in self.regex[self.ind:]:
+            zerostart = self.regex[self.ind:].index["*("] + self.ind
+        else:
+            zerostart = -1
 
         endind = self.regex[self.ind:].index("]|") + self.ind
 
-        while nextstart != -1 or nestedStarts:
-            if nextstart != -1 and nextstart < endind:
-                nestedStarts.append(nextstart)
-                startind = nextstart + 2
+        while orstart != -1 or zerostart != -1 or nestedOrStarts:
 
-                if "|[" in self.regex[startind:]:
-                    nextstart = self.regex[startind:].index("|[") + startind
-                else:
-                    nextstart = -1
+            if orstart != -1 and orstart < endind or \
+                zerostart != -1 and zerostart < endind:
+
+                if orstart != -1 and zerostart != -1:
+                    if orstart < zerostart:
+                        orstart, startind = self._handleOrStart(nestedOrStarts,
+                                orstart, startind)
+                    else:
+                        zerostart, startind = self._handleZeroStart(nestedZeroStarts,
+                                zerostart, startind)
+                elif orstart != -1:
+                    orstart, startind = self._handleOrStart(nestedOrStarts,
+                            orstart, startind)
+                elif zerostart != -1:
+                    zerostart, startind = self._handleOrStart(nestedZeroStarts,
+                            zerostart, startind)
+
             else:
-                beginNested = nestedStarts.pop()
-                nestedOrs[beginNested] = endind
-                startind = endind + 2
-
-                if "|[" in self.regex[startind:]:
-                    nextstart = self.regex[startind:].index("|[") + startind
+                if nestedOrStarts[-1] < nestedZeroStarts[-1]:
+                    beginNested = nestedOrStarts.pop()
+                    orstart, endind  = self._handleOrEnd(beginNested, nestedOrs,
+                            startind, endind)
                 else:
-                    nextstart = -1
+                    beginNested = nestedZeroStarts.pop()
+                    zerostart, endind  = self._handleZeroEnd(beginNested,
+                            innerZeroOrMores, startind, endind)
 
-                endind = self.regex[startind:].index("]|") + startind
-
-        if nestedStarts:
+        if nestedOrStarts:
             raise ParseError("Unmatched Or delimiters")
 
-        print(nestedOrs)
-        for k in nestedOrs:
-            print(self.regex[k:nestedOrs[k]+2])
         alterns = splitInnerOr(self.regex[self.ind:endind], nestedOrs)
-        print("ALTERNS")
         print(alterns)
 
         self.ind = endind
@@ -74,6 +140,10 @@ class Parser:
         return Or(list(map(lambda x: Parser(x).parseExpr(), alterns)))
 
 def splitInnerOr(exp, nestedOrs):
+    """
+    Break up inside of Or expression into a list for further parsing
+    """
+
     startind = 0
     split = []
 
@@ -91,3 +161,4 @@ def splitInnerOr(exp, nestedOrs):
             split.append(exp[startind:i+1])
 
     return split
+
