@@ -13,7 +13,7 @@ Instead of using normal syntax, I just came up with something that was easy to p
     *(abc) : Matches the enclosed regex zero or more times
     _ : Matches any character
 
-For example, `ap|e,ple|` would match `ape*` and `apple*`.
+For example, `ap|[e,ple]|` would match `ape*` and `apple*`. It's not super polished -- none of the special characters can be escaped to be matched, for example, but otherwise supports everything expected (including nested expressions like `a|[b, |[c, d]|, e, f]|`).
 
 ## Usage
 

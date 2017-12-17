@@ -1,19 +1,12 @@
 from src.compiler import *
-from src.errors import UnexpectedToken, ParseError
+from src.util import *
 
 class Parser:
 
-    def __init__(self, inp):
-        try:
-            regex, word = inp.split(":")
-        except:
-            print("Incorrect input format")
-            exit(1)
-
+    def __init__(self, regex):
         self.regex = regex
-        self.word = word
-
         self.ind = 0
+
 
     def advance(self):
         self.ind += 1
@@ -24,14 +17,18 @@ class Parser:
 
         self.advance()
 
+    def parseExpr(self):
+        if self.regex[self.ind] == "|":
+            self.parseOr()
+
     def parseOr(self):
         self.consume("|")
         self.consume("[")
 
-        nested = 0
+        nestedStarts = []
+        nestedOrs = {}
         startind = self.ind
 
-        print(self.regex[startind:])
         if "|[" in self.regex[self.ind:]:
             nextstart = self.regex[self.ind:].index("|[") + self.ind
         else:
@@ -39,11 +36,9 @@ class Parser:
 
         endind = self.regex[self.ind:].index("]|") + self.ind
 
-        counter = 0
-        while nextstart != -1 or nested:
-            counter += 1
+        while nextstart != -1 or nestedStarts:
             if nextstart != -1 and nextstart < endind:
-                nested += 1
+                nestedStarts.append(nextstart)
                 startind = nextstart + 2
 
                 if "|[" in self.regex[startind:]:
@@ -51,24 +46,48 @@ class Parser:
                 else:
                     nextstart = -1
             else:
-                nested -= 1
+                beginNested = nestedStarts.pop()
+                nestedOrs[beginNested] = endind
                 startind = endind + 2
 
                 if "|[" in self.regex[startind:]:
                     nextstart = self.regex[startind:].index("|[") + startind
                 else:
                     nextstart = -1
-                print(nextstart)
 
                 endind = self.regex[startind:].index("]|") + startind
 
-
-        if nested != 0:
+        if nestedStarts:
             raise ParseError("Unmatched Or delimiters")
 
-        inner = self.regex[self.ind:endind]
-        print("inner {}".format(inner))
+        print(nestedOrs)
+        for k in nestedOrs:
+            print(self.regex[k:nestedOrs[k]+2])
+        alterns = splitInnerOr(self.regex[self.ind:endind], nestedOrs)
+        print("ALTERNS")
+        print(alterns)
 
         self.ind = endind
         self.consume("]")
         self.consume("|")
+
+        return Or(list(map(lambda x: Parser(x).parseExpr(), alterns)))
+
+def splitInnerOr(exp, nestedOrs):
+    startind = 0
+    split = []
+
+    explen = len(exp)
+    iterator = iter(range(explen))
+    for i in iterator:
+        if exp[i] == "|":
+            split.append(exp[i:nestedOrs[i+2]])
+            consume(iterator, nestedOrs[i+2] - i)
+            startind = nestedOrs[i+2] + 1
+        elif exp[i] == ",":
+            split.append(exp[startind:i])
+            startind = i + 1
+        elif i == explen - 1:
+            split.append(exp[startind:i+1])
+
+    return split

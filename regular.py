@@ -20,7 +20,13 @@ def run_repl():
         if line == "exit":
             break
 
-        Parser(line).parseOr()
+        try:
+            regex, word = line.split(":")
+        except:
+            print("Incorrect input format")
+            exit(1)
+
+        Parser(line).parseExpr()
 
 
 def run_batch():
