@@ -6,7 +6,7 @@ I wanted to understand how regular expressions worked, so I read [this](http://d
 
 ## Notes
 
-Instead of using normal syntax, I just came up with something that was easy to parse:
+Instead of using normal syntax, I came up with something I liked:
 
     abc : Standard string, matches "abc" (and also "abcd" because partial matches count)
     |[a,b,c]| : Alternation of regexes.
