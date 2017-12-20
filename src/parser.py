@@ -78,7 +78,7 @@ class Parser:
 
     def parseOr(self):
         """
-        Parse alternations
+        Parse an alternation starting at current index
         """
 
         self.consume("|")

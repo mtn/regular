@@ -92,3 +92,4 @@ def _compile(regex, tail=EmptyString()):
         return compileAny(tail)
     else:
         raise TypeError("Unexpected internal type")
+

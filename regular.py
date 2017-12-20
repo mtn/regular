@@ -11,31 +11,32 @@ def die(msg):
     print(msg)
     exit(1)
 
-def run_repl():
-    readline.read_init_file(READLINERC)
+# def run_repl():
+#     readline.read_init_file(READLINERC)
 
-    while True:
-        line = input(PROMPT)
+#     while True:
+#         line = input(PROMPT)
 
-        if line == "exit":
-            break
+#         if line == "exit":
+#             break
 
-        try:
-            regex, word = line.split(":")
-        except:
-            print("Incorrect input format")
-            exit(1)
+#         try:
+#             regex, word = line.split(":")
+#         except:
+#             print("Incorrect input format")
+#             exit(1)
 
-        Parser(line).parseExpr()
+#         Parser(line).parse()
 
 
 def run_batch():
     pass
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        run_repl()
-    elif len(sys.argv) == 2:
-        run_batch()
-    else:
-        die("Usage: python3 regular.py [FILENAME]")
+    print(RE(["a", Or(["a", Or(["b","c"])]), "d"]).match("abd"))
+    # if len(sys.argv) == 1:
+    #     run_repl()
+    # elif len(sys.argv) == 2:
+    #     run_batch()
+    # else:
+    #     die("Usage: python3 regular.py [FILENAME]")
