@@ -202,10 +202,10 @@ class TestParser(unittest.TestCase):
         self.assertTrue(RE(Parser("a_|[b,c]|*(de)f").parse()).match("abcdedef"))
 
     def test_simple_nested(self):
-        self.assertTrue(RE(Parser("|[b,|[c,def,|],de]|").parse()).match("def"))
-        self.assertTrue(RE(Parser("|[b,|[c,def,|],de]|").parse()).match("c"))
-        self.assertTrue(RE(Parser("|[b,|[c,def,|],de]|").parse()).match("b"))
-        self.assertTrue(RE(Parser("|[b,|[c,def,|],de]|").parse()).match("de"))
+        self.assertTrue(RE(Parser("|[b,|[c,def,]|,de]|").parse()).match("def"))
+        self.assertTrue(RE(Parser("|[b,|[c,def,]|,de]|").parse()).match("c"))
+        self.assertTrue(RE(Parser("|[b,|[c,def,]|,de]|").parse()).match("b"))
+        self.assertTrue(RE(Parser("|[b,|[c,def,]|,de]|").parse()).match("de"))
 
         self.assertTrue(RE(Parser("*(b*(cdef)de)").parse()).match(""))
         self.assertTrue(RE(Parser("*(b*(cdef)de)").parse()).match("bde"))
@@ -218,17 +218,17 @@ class TestParser(unittest.TestCase):
         self.assertTrue(RE(Parser("|[b,*(cdef),de]|").parse()).match("cdef"))
         self.assertTrue(RE(Parser("|[b,*(cdef),de]|").parse()).match("cdefcdef"))
 
-        self.assertTrue(RE(Parser("*(b|[c,def,|]de)").parse()).match(""))
-        self.assertTrue(RE(Parser("*(b|[c,def,|]de)").parse()).match("bcde"))
-        self.assertTrue(RE(Parser("*(b|[c,def,|]de)").parse()).match("bdefde"))
-        self.assertTrue(RE(Parser("*(b|[c,def,|]de)").parse()).match("bcdebcde"))
-        self.assertTrue(RE(Parser("*(b|[c,def,|]de)").parse()).match("bdefdebdefde"))
+        self.assertTrue(RE(Parser("*(b|[c,def,]|de)").parse()).match(""))
+        self.assertTrue(RE(Parser("*(b|[c,def,]|de)").parse()).match("bcde"))
+        self.assertTrue(RE(Parser("*(b|[c,def,]|de)").parse()).match("bdefde"))
+        self.assertTrue(RE(Parser("*(b|[c,def,]|de)").parse()).match("bcdebcde"))
+        self.assertTrue(RE(Parser("*(b|[c,def,]|de)").parse()).match("bdefdebdefde"))
 
     def test_nested_concatenation(self):
-        self.assertTrue(RE(Parser("a|[b,|[c,def,|],de]|f").parse()).match("adeff"))
-        self.assertTrue(RE(Parser("a|[b,|[c,def,|],de]|f").parse()).match("acf"))
-        self.assertTrue(RE(Parser("a|[b,|[c,def,|],de]|f").parse()).match("abf"))
-        self.assertTrue(RE(Parser("a|[b,|[c,def,|],de]|f").parse()).match("adef"))
+        self.assertTrue(RE(Parser("a|[b,|[c,def]|,de]|f").parse()).match("adeff"))
+        self.assertTrue(RE(Parser("a|[b,|[c,def]|,de]|f").parse()).match("acf"))
+        self.assertTrue(RE(Parser("a|[b,|[c,def]|,de]|f").parse()).match("abf"))
+        self.assertTrue(RE(Parser("a|[b,|[c,def]|,de]|f").parse()).match("adef"))
 
         self.assertTrue(RE(Parser("a*(b*(cdef)de)f").parse()).match("af"))
         self.assertTrue(RE(Parser("a*(b*(cdef)de)f").parse()).match("abdef"))

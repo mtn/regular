@@ -58,7 +58,8 @@ class Parser:
         else:
             or_start = -1
 
-        or_end = self.regex[start_ind:].index("]|") + start_ind
+        if "]|" in self.regex[start_ind:]:
+            or_end = self.regex[start_ind:].index("]|") + start_ind
 
         return or_start, or_end
 
@@ -83,7 +84,8 @@ class Parser:
         else:
             zero_start = -1
 
-        zero_end = self.regex[start_ind:].index(")") + start_ind
+        if ")" in self.regex[start_ind:]:
+            zero_end = self.regex[start_ind:].index(")") + start_ind
 
         return zero_start, zero_end
 
@@ -115,13 +117,14 @@ class Parser:
             zero_start = -1
             zero_end = -1
 
-        if zero_start < zero_end or or_start < or_end:
+        upcoming_nested_or = or_start != -1 and or_start < or_end
+        upcoming_nested_zero = zero_start != -1 and zero_start < zero_end and \
+                               zero_start < or_end
 
-            upcoming_nested_or = or_start != -1 and or_start < or_end
-            upcoming_nested_zero = zero_start != -1 and zero_start < zero_end
+        if upcoming_nested_or or upcoming_nested_zero:
 
             while upcoming_nested_or or upcoming_nested_zero or \
-                  nested_or_starts or inner_zeros:
+                  nested_or_starts or nested_zero_starts:
 
                 if upcoming_nested_or or upcoming_nested_zero:
 
@@ -160,12 +163,17 @@ class Parser:
                                                                start_ind, or_end)
 
                 upcoming_nested_or = or_start != -1 and or_start < or_end
-                upcoming_nested_zero = zero_start != -1 and zero_start < zero_end
+                upcoming_nested_zero = zero_start != -1 and zero_start < zero_end and \
+                                       zero_start < or_end
 
         if nested_or_starts:
             raise ParseError("Unmatched Or delimiters")
 
-        alterns = split_inner_or(self.regex[self.ind:or_end], nested_ors, inner_zeros)
+        if nested_zero_starts:
+            raise ParseError("Unmatched ZeroOrMore delimiters")
+
+        alterns = split_inner_or(self.regex[self.ind:or_end], nested_ors, inner_zeros,
+                                 self.ind)
 
         self.ind = or_end
         self.consume("]")
@@ -212,10 +220,10 @@ class Parser:
 
         return ZeroOrMore(Parser(inner).parse())
 
-def split_inner_or(exp, ors, zeros):
+def split_inner_or(exp, ors, zeros, offset):
     """
     Break up inside of Or expression into a list for further parsing
-    Commas/string end are the delimiters, except within nested expressions
+    Commas/string end are the delimiters, except nested expressions are kept intact
     """
 
     start_ind = 0
@@ -225,13 +233,15 @@ def split_inner_or(exp, ors, zeros):
     iterator = iter(range(explen))
     for i in iterator:
         if exp[i] == "|":
-            split.append(exp[i:ors[i+2]])
-            iter_consume(iterator, ors[i+2] - i)
-            start_ind = ors[i+2] + 1
+            next_delim_ind = next_delim_dist(exp[ors[i+offset]:]) + ors[i+offset]
+            split.append(exp[i:next_delim_ind])
+            iter_consume(iterator, next_delim_ind - i)
+            start_ind = next_delim_ind + 1
         elif exp[i] == "*":
-            split.append(exp[i:zeros[i+2]])
-            iter_consume(iterator, zeros[i+2] - i)
-            start_ind = zeros[i+2] + 1
+            next_delim_ind = next_delim_dist(exp[zeros[i+offset]:]) + zeros[i+offset]
+            split.append(exp[i:next_delim_ind])
+            iter_consume(iterator, next_delim_ind - i)
+            start_ind = next_delim_ind + 1
         elif exp[i] == ",":
             split.append(exp[start_ind:i])
             start_ind = i + 1
@@ -239,3 +249,8 @@ def split_inner_or(exp, ors, zeros):
             split.append(exp[start_ind:i+1])
 
     return split
+
+def next_delim_dist(exp):
+    if "," in exp:
+        return exp.index(",")
+    return len(exp)
