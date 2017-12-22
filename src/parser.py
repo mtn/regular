@@ -25,7 +25,6 @@ class Parser:
         if len(exps) == 1:
             return exps[0]
 
-        print("exps {}".format(exps))
         return exps
 
     def parse_expr(self):
@@ -192,26 +191,27 @@ class Parser:
 
         zero_end = self.regex[start_ind:].index(")") + start_ind
 
-        while zero_start != -1 or zero_starts:
-            if zero_start != -1 and zero_start < zero_end:
-                zero_starts.append(zero_start)
-                start_ind = zero_start + 2
+        if zero_start < zero_end:
+            while zero_start != -1 and zero_start < zero_end or zero_starts:
+                if zero_start != -1 and zero_start < zero_end:
+                    zero_starts.append(zero_start)
+                    start_ind = zero_start + 2
 
-                if "*(" in self.regex[start_ind:]:
-                    zero_start = self.regex[start_ind:].index("*(") + start_ind
+                    if "*(" in self.regex[start_ind:]:
+                        zero_start = self.regex[start_ind:].index("*(") + start_ind
+                    else:
+                        zero_start = -1
                 else:
-                    zero_start = -1
-            else:
-                begin_nested = zero_starts.pop()
-                nested_zeros[begin_nested] = zero_end
-                start_ind = zero_end + 1
+                    begin_nested = zero_starts.pop()
+                    nested_zeros[begin_nested] = zero_end
+                    start_ind = zero_end + 1
 
-                if "*(" in self.regex[start_ind:]:
-                    zero_start = self.regex[start_ind:].index("*(") + start_ind
-                else:
-                    zero_start = -1
+                    if "*(" in self.regex[start_ind:]:
+                        zero_start = self.regex[start_ind:].index("*(") + start_ind
+                    else:
+                        zero_start = -1
 
-                zero_end = self.regex[start_ind:].index(")") + start_ind
+                    zero_end = self.regex[start_ind:].index(")") + start_ind
 
         if zero_starts:
             raise ParseError("Unmatched ZeroOrMore delimiters")

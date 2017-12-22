@@ -33,7 +33,10 @@ def run_batch():
     pass
 
 if __name__ == "__main__":
-    print(Parser("*(a*(be)c)").parse())
+    print("*(be)e*(cd)c")
+    print(Parser("*(be)e*(cd)c").parse())
+    # print("a*(c*(a))c*(bc)")
+    # print(Parser("a*(c*(a))c*(bc)").parse())
     # if len(sys.argv) == 1:
     #     run_repl()
     # elif len(sys.argv) == 2:
