@@ -63,9 +63,9 @@ class Parser:
         return or_start, or_end
 
 
-    def _handle_zero_start(self, nested_zero_starts, or_start, start_ind):
-        nested_zero_starts.append(or_start)
-        start_ind = or_start + 2
+    def _handle_zero_start(self, nested_zero_starts, zero_start, start_ind):
+        nested_zero_starts.append(zero_start)
+        start_ind = zero_start + 2
 
         if "*(" in self.regex[start_ind:]:
             zero_start = self.regex[start_ind:].index("*(") + start_ind
@@ -106,13 +106,13 @@ class Parser:
         else:
             or_start = -1
 
+        or_end = self.regex[self.ind:].index("]|") + self.ind
+
         if "*(" in self.regex[self.ind:]:
             zero_start = self.regex[self.ind:].index("*(") + self.ind
             zero_end = self.regex[self.ind:].index(")") + self.ind
         else:
             zero_start = -1
-
-        or_end = self.regex[self.ind:].index("]|") + self.ind
 
         while or_start != -1 or zero_start != -1 or nested_or_starts:
 
@@ -122,19 +122,19 @@ class Parser:
                 if or_start != -1 and zero_start != -1:
                     if or_start < zero_start:
                         or_start, start_ind = self._handle_or_start(nested_or_starts,
-                                                                   or_start, start_ind)
+                                                                    or_start, start_ind)
                     else:
                         print("zero_start")
                         zero_start, start_ind = self._handle_zero_start(nested_zero_starts,
-                                                                       zero_start, start_ind)
+                                                                        zero_start, start_ind)
                         print("nested_zero_starts {}".format(nested_zero_starts))
                 elif or_start != -1:
                     or_start, start_ind = self._handle_or_start(nested_or_starts,
-                                                               or_start, start_ind)
+                                                                or_start, start_ind)
                 elif zero_start != -1:
                     print("zero_start")
                     zero_start, start_ind = self._handle_zero_start(nested_zero_starts,
-                                                                   zero_start, start_ind)
+                                                                    zero_start, start_ind)
                     print("nested_zero_starts {}".format(nested_zero_starts))
 
             else:
@@ -151,11 +151,11 @@ class Parser:
                 print("nested_zero {} or_next {}".format(zero_next, or_next))
 
                 if nested_zero_starts:
-                    print("hi zeroend")
+                    print("hi zero_end")
                     begin_nested = nested_zero_starts.pop()
-                    zero_start, zeroend = self._handle_zero_end(begin_nested,
-                                                                inner_zeros, start_ind,
-                                                                or_end)
+                    zero_start, zero_end = self._handle_zero_end(begin_nested,
+                                                                 inner_zeros, start_ind,
+                                                                 or_end)
                 else:
                     begin_nested = nested_or_starts.pop()
                     or_start, or_end = self._handle_or_end(begin_nested,
@@ -194,24 +194,12 @@ class Parser:
         if zero_start < zero_end:
             while zero_start != -1 and zero_start < zero_end or zero_starts:
                 if zero_start != -1 and zero_start < zero_end:
-                    zero_starts.append(zero_start)
-                    start_ind = zero_start + 2
-
-                    if "*(" in self.regex[start_ind:]:
-                        zero_start = self.regex[start_ind:].index("*(") + start_ind
-                    else:
-                        zero_start = -1
+                    zero_start, start_ind = self._handle_zero_start(zero_starts, zero_start,
+                                                                    start_ind)
                 else:
                     begin_nested = zero_starts.pop()
-                    nested_zeros[begin_nested] = zero_end
-                    start_ind = zero_end + 1
-
-                    if "*(" in self.regex[start_ind:]:
-                        zero_start = self.regex[start_ind:].index("*(") + start_ind
-                    else:
-                        zero_start = -1
-
-                    zero_end = self.regex[start_ind:].index(")") + start_ind
+                    zero_start, zero_end = self._handle_zero_end(begin_nested, nested_zeros,
+                                                                 start_ind, zero_end)
 
         if zero_starts:
             raise ParseError("Unmatched ZeroOrMore delimiters")
