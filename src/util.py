@@ -1,3 +1,7 @@
+"""
+Error type definitions and utility functions
+"""
+
 from itertools import islice
 import collections
 
@@ -11,7 +15,7 @@ class ParseError(Exception):
         self.message = msg
 
 
-def consume(iterator, n):
+def iter_consume(iterator, n):
     "Advance the iterator n-steps ahead. If n is none, consume entirely."
     if n is None:
         collections.deque(iterator, maxlen=0)

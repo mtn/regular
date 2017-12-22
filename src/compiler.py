@@ -91,4 +91,4 @@ def _compile(regex, tail=EmptyString()):
     elif isinstance(regex, Any):
         return compileAny(tail)
     else:
-        raise TypeError("Unexpected internal type")
+        raise TypeError("Unexpected internal type: {}".format(type(regex)))

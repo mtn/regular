@@ -33,8 +33,6 @@ def run_batch():
     pass
 
 if __name__ == "__main__":
-    print("{}".format(AlternationFactory([CharacterNode("2", EmptyString()), EmptyString()])))
-    exit(0)
     if len(sys.argv) == 1:
         run_repl()
     elif len(sys.argv) == 2:
