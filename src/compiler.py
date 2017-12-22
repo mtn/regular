@@ -46,7 +46,7 @@ class RE:
         for i, c in enumerate(chars):
             state = state.derive(c)
 
-            if state.matchEnd():
+            if state.matchEnd() and i == len(chars) - 1:
                 return True
             elif state.matchEnd() and not state.canMatchMore():
                 return False
@@ -66,7 +66,7 @@ def compileList(arr, tail=EmptyString()):
     return tail
 
 def compileOr(altern, tail=EmptyString()):
-    return AlternationNode(list(map(lambda a: _compile(a, tail), altern.alternatives)))
+    return AlternationFactory(list(map(lambda a: _compile(a, tail), altern.alternatives)))
 
 def compileAny(tail=EmptyString()):
     return AnyCharacterNode(tail)

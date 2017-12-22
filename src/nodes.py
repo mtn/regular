@@ -7,33 +7,6 @@ class RegexNode:
     Base node type
     """
 
-    def __new__(cls, *args, **kwargs):
-
-        if not args:
-            return super(RegexNode, cls).__new__(cls)
-
-        elif len(args) == 1:
-
-            # List of alternatives -> AlternationNode
-            if isinstance(args[0], list):
-                _alternatives = list(filter(lambda x: not isinstance(x, NeverMatches), args[0]))
-
-                if not _alternatives:
-                    return NeverMatches()
-                elif len(_alternatives) == 1:
-                    return _alternatives[0]
-
-                alternode = super(RegexNode, cls).__new__(AlternationNode)
-                alternode.__init__(_alternatives)
-                return alternode
-
-            else:
-                return super(RegexNode, cls).__new__(cls)
-
-        # Character and next -> CharacterNode
-        elif len(args) == 2:
-            return super(RegexNode, cls).__new__(CharacterNode)
-
     def derive(self, _):
         return NeverMatches()
 
@@ -77,7 +50,7 @@ class AlternationNode(RegexNode):
         self.alternatives = alternatives
 
     def derive(self, char):
-        return AlternationNode(list(map(lambda c: c.derive(char), self.alternatives)))
+        return AlternationFactory(list(map(lambda c: c.derive(char), self.alternatives)))
 
     def matchEnd(self):
         if [altern for altern in self.alternatives if altern.matchEnd()]:
@@ -91,6 +64,18 @@ class AlternationNode(RegexNode):
 
     def __repr__(self):
         return "Alternode({})".format(self.alternatives)
+
+def AlternationFactory(alternatives):
+
+    _alternatives = list(filter(lambda x: not isinstance(x, NeverMatches), alternatives))
+
+    if not _alternatives:
+        return NeverMatches()
+    elif len(_alternatives) == 1:
+        return _alternatives[0]
+
+    return AlternationNode(_alternatives)
+
 
 class AnyCharacterNode(RegexNode):
 
@@ -111,7 +96,7 @@ class RepetitionNode(RegexNode):
         self.next = next_node
 
     def derive(self, char):
-        return AlternationNode([
+        return AlternationFactory([
             self.head.derive(char),
             self.next.derive(char)
             ])
