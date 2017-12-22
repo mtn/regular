@@ -142,6 +142,8 @@ class TestMatch(unittest.TestCase):
         Test for different concatentation combinations
         """
 
+        self.assertTrue(RE([]).match(""))
+
         self.assertTrue(RE([ZeroOrMore("abc"), "d"]).match("d"))
         self.assertTrue(RE(["a", Or(["a", "b"]), "d"]).match("abd"))
         self.assertFalse(RE(["a", Or(["a", "b"]), "d"]).match("aed"))
@@ -158,23 +160,46 @@ class TestMatch(unittest.TestCase):
         self.assertTrue(phone_number.match("123-4567"))
         self.assertFalse(phone_number.match("55"))
 
-    def test_edge_cases(self):
-        self.assertTrue(RE([]).match(""))
-
 
 class TestParser(unittest.TestCase):
     """
     Assumes IR match works correctly and tests match from raw input
     """
 
-    # Current api: RE(Parser(line).parse()).match(...)
-    def test_simple_concatenation(self):
+    # api: RE(Parser(line).parse()).match(...)
+    def test_simple_nonnested_concatenation(self):
         self.assertTrue(RE(Parser("abc").parse()).match("abc"))
         self.assertFalse(RE(Parser("abc").parse()).match("abd"))
 
-        # self.assertFalse(RE(Parser("").parse()).match(""))
-        # self.assertFalse(RE(Parser("").parse()).match("abd"))
+        self.assertTrue(RE([]).match(""))
+        self.assertTrue(RE(Parser("").parse()).match(""))
+        self.assertFalse(RE(Parser("").parse()).match("abd"))
 
+        self.assertTrue(RE(Parser("_").parse()).match("a"))
+        self.assertTrue(RE(Parser("_").parse()).match("b"))
+        self.assertFalse(RE(Parser("_").parse()).match("bc"))
+
+        self.assertTrue(RE(Parser("__").parse()).match("ab"))
+        self.assertFalse(RE(Parser("__").parse()).match("abc"))
+
+        self.assertTrue(RE(Parser("a|[b,c,de]|f").parse()).match("abf"))
+        self.assertTrue(RE(Parser("a|[b,c,de]|f").parse()).match("acf"))
+        self.assertTrue(RE(Parser("a|[b,c,de]|f").parse()).match("adef"))
+        self.assertFalse(RE(Parser("a|[b,c,de]|f").parse()).match("aef"))
+
+        self.assertTrue(RE(Parser("a*(de)f").parse()).match("af"))
+        self.assertTrue(RE(Parser("a*(de)f").parse()).match("adef"))
+        self.assertTrue(RE(Parser("a*(de)f").parse()).match("adedef"))
+
+    def test_complex_nonnested_concatenation(self):
+        self.assertTrue(RE(Parser("a|[b,c]|*(de)f").parse()).match("abf"))
+        self.assertTrue(RE(Parser("a|[b,c]|*(de)f").parse()).match("acf"))
+        self.assertTrue(RE(Parser("a|[b,c]|*(de)f").parse()).match("abdef"))
+        self.assertTrue(RE(Parser("a|[b,c]|*(de)f").parse()).match("acdef"))
+        self.assertTrue(RE(Parser("a|[b,c]|*(de)f").parse()).match("abdedef"))
+        self.assertTrue(RE(Parser("a|[b,c]|*(de)f").parse()).match("acdedef"))
+
+        self.assertTrue(RE(Parser("a_|[b,c]|*(de)f").parse()).match("abcdedef"))
 
 if __name__ == "__main__":
     unittest.main()

@@ -53,25 +53,25 @@ class RE:
 
         return False
 
-def compileString(string, tail=EmptyString()):
+def compile_string(string, tail=EmptyString()):
     for char in reversed(string):
         tail = CharacterNode(char, tail)
 
     return tail
 
-def compileList(arr, tail=EmptyString()):
+def compile_list(arr, tail=EmptyString()):
     for regex in reversed(arr):
         tail = _compile(regex, tail)
 
     return tail
 
-def compileOr(altern, tail=EmptyString()):
+def compile_or(altern, tail=EmptyString()):
     return AlternationFactory(list(map(lambda a: _compile(a, tail), altern.alternatives)))
 
-def compileAny(tail=EmptyString()):
+def compile_any(tail=EmptyString()):
     return AnyCharacterNode(tail)
 
-def compileZeroOrMore(zeroOrMore, tail=EmptyString()):
+def compile_zero_or_more(zeroOrMore, tail=EmptyString()):
     repetition = RepetitionNode(tail)
 
     contents = _compile(zeroOrMore.repeatable, repetition)
@@ -81,14 +81,14 @@ def compileZeroOrMore(zeroOrMore, tail=EmptyString()):
 
 def _compile(regex, tail=EmptyString()):
     if isinstance(regex, str):
-        return compileString(regex, tail)
+        return compile_string(regex, tail)
     elif isinstance(regex, list):
-        return compileList(regex, tail)
+        return compile_list(regex, tail)
     elif isinstance(regex, Or):
-        return compileOr(regex, tail)
+        return compile_or(regex, tail)
     elif isinstance(regex, ZeroOrMore):
-        return compileZeroOrMore(regex, tail)
+        return compile_zero_or_more(regex, tail)
     elif isinstance(regex, Any):
-        return compileAny(tail)
+        return compile_any(tail)
     else:
         raise TypeError("Unexpected internal type: {}".format(type(regex)))

@@ -25,6 +25,7 @@ class Parser:
         if len(exps) == 1:
             return exps[0]
 
+        print("exps {}".format(exps))
         return exps
 
     def parse_expr(self):
