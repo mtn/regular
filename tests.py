@@ -2,6 +2,7 @@ import unittest
 
 from src.nodes import *
 from src.compiler import *
+from src.parser import *
 
 class TestNodes(unittest.TestCase):
     """
@@ -122,13 +123,6 @@ class TestCompiler(unittest.TestCase):
 
     pass
 
-class TestParser(unittest.TestCase):
-    """
-    Tests raw input->IR (parser)
-    """
-
-    pass
-
 class TestMatch(unittest.TestCase):
     """
     Test IR->RE.match matches correctly
@@ -164,6 +158,19 @@ class TestMatch(unittest.TestCase):
         self.assertTrue(phone_number.match("123-4567"))
         self.assertFalse(phone_number.match("55"))
 
+
+class TestParser(unittest.TestCase):
+    """
+    Assumes IR match works correctly and tests match from raw input
+    """
+
+    # Current api: RE(Parser(line).parse()).match(...)
+    def test_simple_concatenation(self):
+        self.assertTrue(RE(Parser("abc")).match("abc"))
+        self.assertFalse(RE(Parser("abc")).match("abd"))
+
+        self.assertFalse(RE(Parser("")).match(""))
+        self.assertFalse(RE(Parser("")).match("abd"))
 
 
 if __name__ == "__main__":

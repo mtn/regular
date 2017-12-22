@@ -17,13 +17,23 @@ class Parser:
 
         self.advance()
 
-    def parseExpr(self):
+    def parse(self):
+        exps = []
+        while self.ind < len(self.regex):
+            # keep parsing expressions until there are no more, creating a concatenation
+            pass
+
+        if len(exps) == 1:
+            return exps[0]
+        return exps
+
+    def parse_expr(self):
         if self.regex[self.ind] == "|":
-            return self.parseOr()
+            return self.parse_or()
 
         return self
 
-    def _handleor_start(self, nested_or_starts, or_start, startind):
+    def _handle_or_start(self, nested_or_starts, or_start, startind):
         nested_or_starts.append(or_start)
         startind = or_start + 2
 
@@ -34,7 +44,7 @@ class Parser:
 
         return or_start, startind
 
-    def _handleor_end(self, begin_nested, nested_ors, startind, or_end):
+    def _handle_or_end(self, begin_nested, nested_ors, startind, or_end):
         nested_ors[begin_nested] = or_end
         startind = or_end + 2
 
@@ -48,7 +58,7 @@ class Parser:
         return or_start, or_end
 
 
-    def _handlezero_start(self, nested_zero_starts, or_start, startind):
+    def _handle_zero_start(self, nested_zero_starts, or_start, startind):
         nested_zero_starts.append(or_start)
         startind = or_start + 2
 
@@ -59,13 +69,9 @@ class Parser:
 
         return zero_start, startind
 
-    def _handleZeroEnd(self, begin_nested, zeros, startind, zeroend):
-        print("INSIDE HANDLE ZERO END")
-        print("zeros {}".format(zeros))
+    def _handle_zero_end(self, begin_nested, zeros, startind, zeroend):
         zeros[begin_nested] = zeroend
         startind = zeroend + 1
-
-        print("zeros {}".format(zeros))
 
         if "*(" in self.regex[startind:]:
             zero_start = self.regex[startind:].index("*(") + startind
@@ -76,7 +82,7 @@ class Parser:
 
         return zero_start, zeroend
 
-    def parseOr(self):
+    def parse_or(self):
         """
         Parse an alternation starting at current index
         """
@@ -110,19 +116,19 @@ class Parser:
 
                 if or_start != -1 and zero_start != -1:
                     if or_start < zero_start:
-                        or_start, startind = self._handleor_start(nested_or_starts,
-                                                                  or_start, startind)
+                        or_start, startind = self._handle_or_start(nested_or_starts,
+                                                                   or_start, startind)
                     else:
                         print("zero_start")
-                        zero_start, startind = self._handlezero_start(nested_zero_starts,
-                                                                      zero_start, startind)
+                        zero_start, startind = self._handle_zero_start(nested_zero_starts,
+                                                                       zero_start, startind)
                         print("nested_zero_starts {}".format(nested_zero_starts))
                 elif or_start != -1:
-                    or_start, startind = self._handleor_start(nested_or_starts,
+                    or_start, startind = self._handle_or_start(nested_or_starts,
                                                               or_start, startind)
                 elif zero_start != -1:
                     print("zero_start")
-                    zero_start, startind = self._handlezero_start(nested_zero_starts,
+                    zero_start, startind = self._handle_zero_start(nested_zero_starts,
                                                                   zero_start, startind)
                     print("nested_zero_starts {}".format(nested_zero_starts))
 
@@ -142,12 +148,12 @@ class Parser:
                 if nested_zero_starts:
                     print("hi zeroend")
                     begin_nested = nested_zero_starts.pop()
-                    zero_start, zeroend = self._handleZeroEnd(begin_nested,
+                    zero_start, zeroend = self._handle_zero_end(begin_nested,
                                                               inner_zeros, startind,
                                                               or_end)
                 else:
                     begin_nested = nested_or_starts.pop()
-                    or_start, or_end = self._handleor_end(begin_nested,
+                    or_start, or_end = self._handle_or_end(begin_nested,
                                                           nested_ors,
                                                           startind, or_end)
 
@@ -163,7 +169,7 @@ class Parser:
         self.consume("]")
         self.consume("|")
 
-        return Or(list(map(lambda x: Parser(x).parseExpr(), alterns)))
+        return Or(list(map(lambda x: Parser(x).parse(), alterns)))
 
 def split_inner_or(exp, ors, zeros):
     """
