@@ -175,7 +175,6 @@ class Parser:
 
         alterns = split_inner_or(self.regex[self.ind:or_end], nested_ors, inner_zeros,
                                  self.ind)
-        print("ALTERNS {}".format(alterns))
 
         self.ind = or_end
         self.consume("]")
@@ -231,31 +230,28 @@ def split_inner_or(exp, ors, zeros, offset):
     start_ind = 0
     split = []
 
-    print("EXP {}".format(exp))
-
     explen = len(exp)
     iterator = iter(range(explen))
     for i in iterator:
-        if exp[i] == "|":
-            next_delim_ind = next_delim_dist(exp[ors[i+offset]:]) + ors[i+offset] - offset
+        if i == explen - 1:
+            split.append(exp[start_ind:i+1])
+        elif exp[i] == "|" and exp[i+1] == "[":
+            next_delim_ind = next_delim_dist(exp[ors[i+offset]-offset+2:]) + ors[i+offset] - offset + 2
             split.append(exp[i:next_delim_ind])
             iter_consume(iterator, next_delim_ind - i)
             start_ind = next_delim_ind + 1
         elif exp[i] == "*":
-            next_delim_ind = next_delim_dist(exp[zeros[i+offset]:]) + zeros[i+offset] - offset
+            next_delim_ind = next_delim_dist(exp[zeros[i+offset]-offset+1:]) + zeros[i+offset] - offset + 1
             split.append(exp[i:next_delim_ind])
             iter_consume(iterator, next_delim_ind - i)
             start_ind = next_delim_ind + 1
         elif exp[i] == ",":
             split.append(exp[start_ind:i])
             start_ind = i + 1
-        elif i == explen - 1:
-            split.append(exp[start_ind:i+1])
 
     return split
 
 def next_delim_dist(exp):
-    print("looking for delim in {}".format(exp))
     if "," in exp:
         return exp.index(",")
     return len(exp)
