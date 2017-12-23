@@ -21,13 +21,23 @@ repl:
 
     python3 regular.py
 
+Example:
+
+    $ python3 regular.py
+    >> a*(b|[c,def]|de)f:af
+    True
+    >> a*(b|[c,def]|de)f:aff
+    False
+
 Batch mode:
 
     python3 regular.py filename
 
 In both modes, the input format is
 
-    regex : test
+    regex:test
+
+These are sensitive to spaces, but I didn't give much thought to making it resilient to bad input.
 
 ## Tests
 

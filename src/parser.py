@@ -76,7 +76,6 @@ class Parser:
         return zero_start, start_ind
 
     def _handle_zero_end(self, begin_nested, zeros, start_ind, zero_end):
-        print("zero_end {}".format(zero_end))
         zeros[begin_nested] = zero_end
         start_ind = zero_end + 1
 

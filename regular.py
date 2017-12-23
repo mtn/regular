@@ -26,21 +26,24 @@ def run_repl():
             print("Incorrect input format")
             exit(1)
 
-        # Parser(line).parse()
+        print(RE(Parser(regex).parse()).match(word))
 
 
 def run_batch():
-    pass
+    with open(sys.argv[1], "r") as f:
+        for line in f:
+            try:
+                regex, word = line.strip().split(":")
+            except:
+                print("Incorrect input format")
+                exit(1)
+
+            print(RE(Parser(regex).parse()).match(word))
 
 if __name__ == "__main__":
-    print("a*(b|[c,def]|de)f")
-    print(Parser("a*(b|[c,def]|de)f").parse())
-    # print("|[a,|[b,|[c,d,e]|,*(dfg)]|,c]|")
-    # print(Parser("|[a,|[|[b]|,|[c,d,e]|]|,c]|").parse())
-    # print(Parser("|[*(a)]|").parse())
-    # if len(sys.argv) == 1:
-    #     run_repl()
-    # elif len(sys.argv) == 2:
-    #     run_batch()
-    # else:
-    #     die("Usage: python3 regular.py [FILENAME]")
+    if len(sys.argv) == 1:
+        run_repl()
+    elif len(sys.argv) == 2:
+        run_batch()
+    else:
+        die("Usage: python3 regular.py [FILENAME]")
