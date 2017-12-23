@@ -33,7 +33,8 @@ def run_batch():
     pass
 
 if __name__ == "__main__":
-    print(Parser("a|[b,|[c,def]|,de]|f").parse())
+    print("a|[b,*(cdef),de]|f")
+    print(Parser("a|[b,*(cdef),de]|f").parse())
     # print("|[a,|[b,|[c,d,e]|,*(dfg)]|,c]|")
     # print(Parser("|[a,|[|[b]|,|[c,d,e]|]|,c]|").parse())
     # print(Parser("|[*(a)]|").parse())

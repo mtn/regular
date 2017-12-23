@@ -76,6 +76,7 @@ class Parser:
         return zero_start, start_ind
 
     def _handle_zero_end(self, begin_nested, zeros, start_ind, zero_end):
+        print("zero_end {}".format(zero_end))
         zeros[begin_nested] = zero_end
         start_ind = zero_end + 1
 
@@ -156,7 +157,7 @@ class Parser:
                     if zero_next < or_next:
                         begin_nested = nested_zero_starts.pop()
                         zero_start, zero_end = self._handle_zero_end(begin_nested, inner_zeros,
-                                                                     start_ind, or_end)
+                                                                     start_ind, zero_end)
                     else:
                         begin_nested = nested_or_starts.pop()
                         or_start, or_end = self._handle_or_end(begin_nested, nested_ors,
@@ -174,6 +175,7 @@ class Parser:
 
         alterns = split_inner_or(self.regex[self.ind:or_end], nested_ors, inner_zeros,
                                  self.ind)
+        print("ALTERNS {}".format(alterns))
 
         self.ind = or_end
         self.consume("]")
@@ -229,16 +231,18 @@ def split_inner_or(exp, ors, zeros, offset):
     start_ind = 0
     split = []
 
+    print("EXP {}".format(exp))
+
     explen = len(exp)
     iterator = iter(range(explen))
     for i in iterator:
         if exp[i] == "|":
-            next_delim_ind = next_delim_dist(exp[ors[i+offset]:]) + ors[i+offset]
+            next_delim_ind = next_delim_dist(exp[ors[i+offset]:]) + ors[i+offset] - offset
             split.append(exp[i:next_delim_ind])
             iter_consume(iterator, next_delim_ind - i)
             start_ind = next_delim_ind + 1
         elif exp[i] == "*":
-            next_delim_ind = next_delim_dist(exp[zeros[i+offset]:]) + zeros[i+offset]
+            next_delim_ind = next_delim_dist(exp[zeros[i+offset]:]) + zeros[i+offset] - offset
             split.append(exp[i:next_delim_ind])
             iter_consume(iterator, next_delim_ind - i)
             start_ind = next_delim_ind + 1
@@ -251,6 +255,7 @@ def split_inner_or(exp, ors, zeros, offset):
     return split
 
 def next_delim_dist(exp):
+    print("looking for delim in {}".format(exp))
     if "," in exp:
         return exp.index(",")
     return len(exp)
