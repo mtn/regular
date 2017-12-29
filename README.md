@@ -1,4 +1,5 @@
 # regular
+[![Build Status](https://travis-ci.org/mtn/regular.png)](https://travis-ci.org/mtn/regular)
 
 Regular is a toy regular expression engine.
 
