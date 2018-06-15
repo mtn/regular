@@ -11,6 +11,7 @@ def die(msg):
     print(msg)
     exit(1)
 
+
 def run_repl():
     readline.read_init_file(READLINERC)
 
@@ -39,6 +40,7 @@ def run_batch():
                 exit(1)
 
             print(RE(Parser(regex).parse()).match(word))
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:

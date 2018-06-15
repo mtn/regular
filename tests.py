@@ -4,10 +4,12 @@ from src.nodes import *
 from src.compiler import *
 from src.parser import *
 
+
 class TestNodes(unittest.TestCase):
     """
     Tests functionality nodes
     """
+
     def test_simple_dfa(self):
         """
         Test to ensure a DFA gets derived correctly
@@ -28,14 +30,15 @@ class TestNodes(unittest.TestCase):
         self.assertTrue(isinstance(first.derive("b"), NeverMatches))
         self.assertEqual(first.derive("a"), middle)
 
-
     def test_dfa_with_alternation(self):
         """
         Test to ensure a single alternation in a DFA gets derived correctly
         """
 
         last = CharacterNode("d", EmptyString())
-        middle = AlternationFactory([CharacterNode("b", last), CharacterNode("c", last)])
+        middle = AlternationFactory(
+            [CharacterNode("b", last), CharacterNode("c", last)]
+        )
         first = CharacterNode("a", middle)
 
         self.assertTrue(isinstance(last.derive("d"), EmptyString))
@@ -57,8 +60,12 @@ class TestNodes(unittest.TestCase):
         """
 
         last = CharacterNode("d", EmptyString())
-        middle2 = AlternationFactory([CharacterNode("b", last), CharacterNode("c", last)])
-        middle1 = AlternationFactory([CharacterNode("b", middle2), CharacterNode("c", middle2)])
+        middle2 = AlternationFactory(
+            [CharacterNode("b", last), CharacterNode("c", last)]
+        )
+        middle1 = AlternationFactory(
+            [CharacterNode("b", middle2), CharacterNode("c", middle2)]
+        )
         first = CharacterNode("a", middle1)
 
         self.assertTrue(last.canMatchMore())
@@ -84,7 +91,6 @@ class TestNodes(unittest.TestCase):
         self.assertTrue(isinstance(first.derive("b"), NeverMatches))
         self.assertEqual(first.derive("a"), middle1)
 
-
     def test_any_character_node(self):
         """
         Ensure the AnyCharacter node advances given any input character
@@ -102,18 +108,22 @@ class TestNodes(unittest.TestCase):
 
         tail = CharacterNode("d", EmptyString())
         repetition = RepetitionNode(tail)
-        repetition_body = CharacterNode("a", CharacterNode("b", CharacterNode(
-            "c", repetition)))
+        repetition_body = CharacterNode(
+            "a", CharacterNode("b", CharacterNode("c", repetition))
+        )
         repetition.head = repetition_body
 
         self.assertTrue(isinstance(repetition.derive("a"), CharacterNode))
         self.assertTrue(isinstance(repetition.derive("d"), EmptyString))
-        self.assertTrue(isinstance(repetition.derive("a").derive("b").derive("c"),
-                                   RepetitionNode))
+        self.assertTrue(
+            isinstance(repetition.derive("a").derive("b").derive("c"), RepetitionNode)
+        )
 
         self.assertEqual(repetition.derive("a").derive("b").derive("c"), repetition)
-        self.assertEqual(repetition.derive("a").derive("b").derive("c").derive("a"),
-                         repetition.derive("a"))
+        self.assertEqual(
+            repetition.derive("a").derive("b").derive("c").derive("a"),
+            repetition.derive("a"),
+        )
 
 
 class TestCompiler(unittest.TestCase):
@@ -122,6 +132,7 @@ class TestCompiler(unittest.TestCase):
     """
 
     pass
+
 
 class TestMatch(unittest.TestCase):
     """
@@ -148,13 +159,23 @@ class TestMatch(unittest.TestCase):
         self.assertTrue(RE(["a", Or(["a", "b"]), "d"]).match("abd"))
         self.assertFalse(RE(["a", Or(["a", "b"]), "d"]).match("aed"))
 
-
         digit = Or(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
 
         self.assertTrue(RE([digit, digit]).match("12"))
 
-        phone_number = RE([Or([["(", digit, digit, digit, ")", " "], ""]), digit, digit,
-                           digit, "-", digit, digit, digit, digit])
+        phone_number = RE(
+            [
+                Or([["(", digit, digit, digit, ")", " "], ""]),
+                digit,
+                digit,
+                digit,
+                "-",
+                digit,
+                digit,
+                digit,
+                digit,
+            ]
+        )
 
         self.assertTrue(phone_number.match("(123) 456-7891"))
         self.assertTrue(phone_number.match("123-4567"))
@@ -246,6 +267,7 @@ class TestParser(unittest.TestCase):
         self.assertTrue(RE(Parser("a*(b|[c,def]|de)f").parse()).match("abdefdef"))
         self.assertTrue(RE(Parser("a*(b|[c,def]|de)f").parse()).match("abcdebcdef"))
         self.assertTrue(RE(Parser("a*(b|[c,def]|de)f").parse()).match("abdefdebdefdef"))
+
 
 if __name__ == "__main__":
     unittest.main()

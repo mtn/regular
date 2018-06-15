@@ -12,6 +12,7 @@ from src.nodes import *
 
 
 class Or:
+
     def __init__(self, alternatives):
         if not isinstance(alternatives, list):
             raise TypeError("Argument to Or must be a list")
@@ -21,18 +22,24 @@ class Or:
     def __repr__(self):
         return "Or({})".format(self.alternatives)
 
+
 class ZeroOrMore:
+
     def __init__(self, repeatable):
         self.repeatable = repeatable
 
     def __repr__(self):
         return "ZeroOrMore({})".format(self.repeatable)
 
+
 class Any:
+
     def __repr__(self):
         return "Any"
 
+
 class RE:
+
     def __init__(self, regex):
         self.start = _compile(regex)
 
@@ -53,11 +60,13 @@ class RE:
 
         return False
 
+
 def compile_string(string, tail=EmptyString()):
     for char in reversed(string):
         tail = CharacterNode(char, tail)
 
     return tail
+
 
 def compile_list(arr, tail=EmptyString()):
     for regex in reversed(arr):
@@ -65,11 +74,16 @@ def compile_list(arr, tail=EmptyString()):
 
     return tail
 
+
 def compile_or(altern, tail=EmptyString()):
-    return AlternationFactory(list(map(lambda a: _compile(a, tail), altern.alternatives)))
+    return AlternationFactory(
+        list(map(lambda a: _compile(a, tail), altern.alternatives))
+    )
+
 
 def compile_any(tail=EmptyString()):
     return AnyCharacterNode(tail)
+
 
 def compile_zero_or_more(zeroOrMore, tail=EmptyString()):
     repetition = RepetitionNode(tail)
@@ -78,6 +92,7 @@ def compile_zero_or_more(zeroOrMore, tail=EmptyString()):
     repetition.head = contents
 
     return repetition
+
 
 def _compile(regex, tail=EmptyString()):
     if isinstance(regex, str):

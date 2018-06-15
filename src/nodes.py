@@ -2,6 +2,7 @@
 Regex linked-list node type definitions
 """
 
+
 class RegexNode:
     """
     Base node type
@@ -19,16 +20,21 @@ class RegexNode:
     def __repr__(self):
         return "RegexNode"
 
+
 class NeverMatches(RegexNode):
+
     def __repr__(self):
         return "NeverMatches"
 
+
 class EmptyString(RegexNode):
+
     def matchEnd(self):
         return True
 
     def __repr__(self):
         return "EmptyString"
+
 
 class CharacterNode(RegexNode):
 
@@ -44,13 +50,16 @@ class CharacterNode(RegexNode):
     def __repr__(self):
         return "CharNode({})".format(self.char)
 
+
 class AlternationNode(RegexNode):
 
     def __init__(self, alternatives):
         self.alternatives = alternatives
 
     def derive(self, char):
-        return AlternationFactory(list(map(lambda c: c.derive(char), self.alternatives)))
+        return AlternationFactory(
+            list(map(lambda c: c.derive(char), self.alternatives))
+        )
 
     def matchEnd(self):
         if [altern for altern in self.alternatives if altern.matchEnd()]:
@@ -65,9 +74,12 @@ class AlternationNode(RegexNode):
     def __repr__(self):
         return "Alternode({})".format(self.alternatives)
 
+
 def AlternationFactory(alternatives):
 
-    _alternatives = list(filter(lambda x: not isinstance(x, NeverMatches), alternatives))
+    _alternatives = list(
+        filter(lambda x: not isinstance(x, NeverMatches), alternatives)
+    )
 
     if not _alternatives:
         return NeverMatches()
@@ -96,10 +108,7 @@ class RepetitionNode(RegexNode):
         self.next = next_node
 
     def derive(self, char):
-        return AlternationFactory([
-            self.head.derive(char),
-            self.next.derive(char)
-            ])
+        return AlternationFactory([self.head.derive(char), self.next.derive(char)])
 
     def matchEnd(self):
         return self.next.matchEnd()
